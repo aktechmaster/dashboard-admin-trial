@@ -132,23 +132,25 @@
     <!-- Script Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- KONFIGURASI SUPABASE -->
+    <!-- KONFIGURASI SUPABASE (Solusi Final) -->
     <script>
-        // Inisialisasi Supabase (Hanya Satu Kali!)
+        // 1. URL Dasar dan Publishable Key
         const supabaseUrl = 'https://vbqihpwsneymfrjzlkrw.supabase.co';
         const supabaseKey = 'sb_publishable_lIrrMLTWNuQ_g0t0BXogpQ_6x5Vt3lh';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // 2. Ganti nama variabel menjadi supabaseClient agar tidak tabrakan!
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Cek Sesi (Apakah user sudah login sebelumnya)
+        // 3. Cek apakah Admin sudah login sebelumnya (Cek Sesi)
         async function cekSesi() {
-            const { data, error } = await supabase.auth.getSession();
+            const { data, error } = await supabaseClient.auth.getSession();
             if (data.session) {
                 tampilkanDashboard(data.session.user.email);
             }
         }
         cekSesi(); 
 
-        // Fungsi Proses Login
+        // 4. Proses Tombol Masuk Diklik
         async function prosesLogin(event) {
             event.preventDefault();
             
@@ -156,17 +158,17 @@
             const password = document.getElementById("passwordInput").value;
             const btnMasuk = document.getElementById("btnMasuk");
 
-            // Animasi Tombol
+            // Ubah teks tombol jadi Loading
             btnMasuk.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...';
             btnMasuk.disabled = true;
 
-            // Eksekusi Login ke Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({
+            // Kirim data ke Supabase (gunakan supabaseClient)
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password,
             });
 
-            // Kembalikan tombol
+            // Kembalikan tombol seperti semula
             btnMasuk.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk';
             btnMasuk.disabled = false;
 
@@ -174,21 +176,24 @@
                 alert("Gagal Masuk: Email atau Kata Sandi salah.");
                 console.error("Error Login:", error.message);
             } else {
+                // Jika sukses, kosongkan form dan buka dashboard
                 document.getElementById("loginForm").reset();
                 tampilkanDashboard(data.user.email);
             }
         }
 
-        // Fungsi Menampilkan Dashboard
+        // 5. Fungsi Logika Tampil Dashboard
         function tampilkanDashboard(emailAdmin) {
             document.getElementById("login-section").style.display = "none";
             document.getElementById("dashboard-section").style.setProperty("display", "flex", "important");
             document.getElementById("namaAdmin").innerText = emailAdmin;
         }
 
-        // Fungsi Logout
+        // 6. Proses Tombol Keluar (Logout)
         async function prosesLogout() {
-            const { error } = await supabase.auth.signOut();
+            // Gunakan supabaseClient
+            const { error } = await supabaseClient.auth.signOut();
+            
             if (!error) {
                 document.getElementById("dashboard-section").style.setProperty("display", "none", "important");
                 document.getElementById("login-section").style.display = "flex";
